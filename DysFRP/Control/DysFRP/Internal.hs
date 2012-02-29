@@ -1,8 +1,8 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {- Dysfunctional reactive programming! 
  - FRP by awful IO 
  - Marek Materzok -}
-
-module Control.DysFRP (
+module Control.DysFRP.Internal (
     Event, Behavior, BehaviorGen,
     runBehavior, mkE,
     liftBG, bindBG,
@@ -11,8 +11,12 @@ module Control.DysFRP (
     genIntegralB, trapIntegralB,
     nullE, appendE, concatE, snapshotE, snapshotWithE, filterE, whenE, whenCondE, constE,
     feedbackB, genToE, joinE,
-    condChangeE, changeE
-)where
+    condChangeE, changeE,
+
+    Handler,
+    mkH, mksH, contramapH, mkBG, addHandler, runHandler, ioMapE, reactMapE, alterE,
+    ReactM, newReactRef, readReactRef, writeReactRef, updateReactRef
+) where
 
 import Control.Applicative
 import Control.Monad
@@ -31,11 +35,24 @@ nthMod l k = l !! abs (k `mod` length l)
 nthModMaybe [] k = Nothing
 nthModMaybe l k = Just $ nthMod l k
 
-type ReactM = ReaderT Int IO
+newtype ReactM a = ReactM { openReactM :: ReaderT Int IO a } deriving (Functor, Monad, MonadIO, MonadFix, Applicative)
+{-
+instance Monad ReactM where
+    return = ReactM . return
+    m1 >>= m2 = ReactM $ openReactM m1 >>= openReactM m2
 
+instance Functor ReactM where
+    fmap f = ReactM . fmap f . openReactM
+
+instance MonadIO ReactM where
+    liftIO = ReactM . liftIO
+
+instance Applicative ReactM where
+    pure = ReactM . pure
+-}
 type ReactRef a = IORef (Int, a, a)
 
-runReactM m = newUnique >>= runReaderT m . hashUnique
+runReactM m = newUnique >>= runReaderT (openReactM m) . hashUnique
 
 -- | Gets the current value of the `Behavior`.
 runBehavior = runReactM . openBehavior
@@ -115,25 +132,25 @@ instance Floating a => Floating (Behavior a) where
 
 newReactRef :: a -> ReactM (ReactRef a)
 newReactRef v = do
-    a <- ask
+    a <- ReactM ask
     liftIO $ newIORef (a, v, v)
 
 readReactRef :: ReactRef a -> ReactM a
 readReactRef r = do
     (a, v1, v2) <- liftIO $ readIORef r
-    a' <- ask
+    a' <- ReactM ask
     return $ if a == a' then v1 else v2
 
 writeReactRef :: ReactRef a -> a -> ReactM ()
 writeReactRef r v = do
     (a, v1, v2) <- liftIO $ readIORef r
-    a' <- ask
+    a' <- ReactM ask
     liftIO $ if a == a' then writeIORef r (a, v1, v) else writeIORef r (a', v2, v)
 
 updateReactRef :: ReactRef a -> ReactM a -> ReactM ()
 updateReactRef r m = do
     (a, v1, v2) <- liftIO $ readIORef r
-    a' <- ask
+    a' <- ReactM ask
     when (a /= a') $ do
 	liftIO $ writeIORef r (a', v2, undefined)
 	writeReactRef r =<< m

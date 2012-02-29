@@ -11,6 +11,6 @@ Category: FRP
 Synopsis: dysFunctional Reactive Programming
 
 Library
-    Build-Depends: base, time, contravariant, mtl
-    Exposed-modules: Control.DysFRP
+    Build-Depends: base, time, contravariant, mtl, transformers
+    Exposed-modules: Control.DysFRP, Control.DysFRP.Internal
 

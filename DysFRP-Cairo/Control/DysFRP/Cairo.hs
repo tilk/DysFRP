@@ -1,4 +1,5 @@
 module Control.DysFRP.Cairo(GtkEvent, mkTickerE, 
+    drawContextOnSurface, drawContextOnDrawable,
     addRefresher, addBufRefresher, addDrawingAreaRefresher,
     addDrawingAreaRefresherG,
     addTick,

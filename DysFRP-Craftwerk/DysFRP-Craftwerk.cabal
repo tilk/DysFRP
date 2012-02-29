@@ -11,6 +11,6 @@ Category: FRP
 Synopsis: dysFunctional Reactive Programming on Craftwerk
 
 Library
-    Build-Depends: base, cairo, gtk, mtl, DysFRP, DysFRP-Cairo
+    Build-Depends: base, cairo, gtk, containers, craftwerk, craftwerk-gtk, DysFRP, DysFRP-Cairo
     Exposed-modules: Control.DysFRP.Craftwerk
 
