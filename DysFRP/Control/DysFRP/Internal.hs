@@ -7,9 +7,9 @@ module Control.DysFRP.Internal (
     runBehavior, mkE,
     liftBG, bindBG,
     utcTimeB, elapsedTimeB, elapsedTimeNumB,
-    dswitchB, switchB, constB, accumB, ifB,
+    dswitchB, switchB, constB, stepB, accumB, ifB,
     genIntegralB, trapIntegralB,
-    nullE, appendE, concatE, snapshotE, snapshotWithE, filterE, whenE, whenCondE, constE,
+    nullE, appendE, concatE, snapshotE, snapshotWithE, filterE, whenE, filterWhenE, whenCondE, constE,
     feedbackB, genToE, joinE,
     condChangeE, changeE,
 
